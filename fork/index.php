@@ -1,4 +1,11 @@
 <?php
+if (!function_exists('str_contains')) {
+    function str_contains(string $haystack, string $needle): bool
+    {
+        return '' === $needle || false !== strpos($haystack, $needle);
+    }
+}
+
 error_reporting(E_ALL ^ E_WARNING);
 
 # Constants
@@ -6,7 +13,7 @@ define("USER_AGENT", $_SERVER['HTTP_USER_AGENT']);
 define("IS_NEOS", (str_contains(USER_AGENT, "Wget") or str_contains(USER_AGENT, "NEOSSetup")));
 define("DEFAULT_STOCK_BRANCH", "release2");
 
-define("WEBSITE_URL", "https://smiskol.com");
+define("WEBSITE_URL", "http://multikyd.iptime.org:8181");
 define("BASE_DIR", "/fork");
 
 $url = "/";
@@ -14,43 +21,45 @@ if (array_key_exists("url", $_GET)) {
     $url = $_GET["url"];
 }
 
-list($username, $branch, $loading_msg) = explode("/", $url);  # todo: clip these strings at the max length in index (to show up on the webpage)
+list($username, $branch) = explode("/", $url);  # todo: clip these strings at the max length in index (to show up on the webpage)
+#list($username, $branch, $loading_msg) = explode("/", $url);  # todo: clip these strings at the max length in index (to show up on the webpage)
 
 $username = substr(strtolower($username), 0, 250);  # 5 less than max
 $branch = substr(trim($branch), 0, 250);
 $branch = $branch == "_" ? "" : $branch;
-$loading_msg = substr(trim($loading_msg), 0, 250);
-$supplied_loading_msg = $loading_msg != "";  # to print secret message
+#$loading_msg = substr(trim($loading_msg), 0, 250);
+#$supplied_loading_msg = $loading_msg != "";  # to print secret message
 
 # Aliases
 if (in_array($username, array("dragonpilot", "dp"))) {
     $username = "dragonpilot-community";
     if ($branch == "") $branch = "devel-i18n";  # default is normally docs
-    if ($loading_msg == "") $loading_msg = "dragonpilot";
+#    if ($loading_msg == "") $loading_msg = "dragonpilot";
 }
 if (in_array($username, array("stock", "commaai"))) {
     $username = "commaai";
     if ($branch == "") $branch = DEFAULT_STOCK_BRANCH;
-    if ($loading_msg == "") $loading_msg = "openpilot";
+#    if ($loading_msg == "") $loading_msg = "openpilot";
 }
 if (in_array($username, array("shane", "sa", "shanesmiskol"))) {
     $username = "shanesmiskol";
-    if ($loading_msg == "") $loading_msg = "Stock Additions";
+#    if ($loading_msg == "") $loading_msg = "Stock Additions";
 }
 
-if ($loading_msg == "") {  # if not an alias with custom msg and not specified use username
+#if ($loading_msg == "") {  # if not an alias with custom msg and not specified use username
     $loading_msg = $username;
-} else {  # make sure we encode spaces, neos setup doesn't like spaces (branch and username shouldn't have spaces)
-	$loading_msg = str_replace(" ", "%20", $loading_msg);
-}
+#} else {  # make sure we encode spaces, neos setup doesn't like spaces (branch and username shouldn't have spaces)
+#	$loading_msg = str_replace(" ", "%20", $loading_msg);
+#}
 
 if (IS_NEOS) {  # if NEOS or wget serve file immediately. commaai/stock if no username provided
     if ($username == "") {
         $username = "commaai";
         $branch = DEFAULT_STOCK_BRANCH;
-        $loading_msg = "openpilot";
+#        $loading_msg = "openpilot";
     }
-    header("Location: " . BASE_DIR . "/build.php?username=" . $username . "&branch=" . $branch . "&loading_msg=" . $loading_msg);
+    header("Location: " . BASE_DIR . "/build.php?username=" . $username . "&branch=" . $branch);
+    #header("Location: " . BASE_DIR . "/build.php?username=" . $username . "&branch=" . $branch . "&loading_msg=" . $loading_msg);
     return;
 }
 
@@ -78,18 +87,18 @@ if ($username == "") {
     exit;
 }
 
-echo '<h3>Given fork username: <a href="https://github.com/' . $username . '/openpilot">' . $username . '</a></h3>';
+echo '<h3>Given fork username: <a href="https://github.com/' . $username . '/openpilot_084">' . $username . '</a></h3>';
 
 
 if ($branch != "") {
-    echo '<h3>Given branch: <a href="https://github.com/'.$username.'/openpilot/tree/'.$branch.'">' . $branch . '</a></h3>';
+    echo '<h3>Given branch: <a href="https://github.com/'.$username.'/openpilot_084/tree/'.$branch.'">' . $branch . '</a></h3>';
 } else {
     echo '<h3>❗ No branch supplied, git will use default GitHub branch ❗</h3>';
 }
 
-if ($loading_msg != "" and $supplied_loading_msg) {
-    echo '<h3>You\'ve discovered a hidden secret!</br>When using this binary, this custom message will be shown: <span>Installing ' . $loading_msg . '</span></h3>';
-}
+#if ($loading_msg != "" and $supplied_loading_msg) {
+#    echo '<h3>You\'ve discovered a hidden secret!</br>When using this binary, this custom message will be shown: <span>Installing ' . $loading_msg . '</span></h3>';
+#}
 
 echo '<html>
     <body>
@@ -101,7 +110,9 @@ echo '<html>
 </html>';
 
 if(array_key_exists('download', $_POST)) {
-    header("Location: " . BASE_DIR . "/build.php?username=" . $username . "&branch=" . $branch . "&loading_msg=" . $loading_msg);
+    header("Location: " . BASE_DIR . "/build.php?username=" . $username . "&branch=" . $branch);
+    #header("Location: " . BASE_DIR . "/build.php?username=" . $username . "&branch=" . $branch . "&loading_msg=" . $loading_msg);
+
     exit;
 }
 ?>
